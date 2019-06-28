@@ -6,20 +6,34 @@ class Block {
     this.data = data;
     this.previousHash = previousHash;
     this.hash = this.calculateHash;
+    this.nonce = 0;
   }
   calculateHash() {
     return SHA256(
       this.index +
         this.timestamp +
         this.previousHash +
-        JSON.stringify(this.data)
+        JSON.stringify(this.data) +
+        this.nonce
     ).toString();
+  }
+
+  mineBlock(difficulty) {
+    while (
+      `${this.hash}`.substring(0, difficulty) !==
+      Array(difficulty + 1).join('0')
+    ) {
+      this.nonce++;
+      this.hash = this.calculateHash();
+    }
+    console.log('Blocked mined: ' + this.hash);
   }
 }
 
 class Blockchain {
   constructor() {
     this.chain = [this.createGenesisBlock()];
+    this.difficulty = 4;
   }
 
   createGenesisBlock() {
@@ -32,7 +46,7 @@ class Blockchain {
 
   addBlock(newBlock) {
     newBlock.previousHash = this.getLatestBlock().hash;
-    newBlock.hash = newBlock.calculateHash();
+    newBlock.mineBlock(this.difficulty);
     this.chain.push(newBlock);
   }
   isChainValid() {
@@ -51,9 +65,8 @@ class Blockchain {
 }
 
 let derkCoin = new Blockchain();
-derkCoin.addBlock(new Block(1, '21/06/2019', { amount: 12 }));
-derkCoin.addBlock(new Block(2, '21/06/2019', { amount: 0 }));
-derkCoin.addBlock(new Block(3, '21/06/2019', { amount: 42 }));
 
-console.log(JSON.stringify(derkCoin, null, '\t'));
-console.log('Is blockchain valid ?', derkCoin.isChainValid());
+console.log('Mining block 1....');
+derkCoin.addBlock(new Block(1, '21/06/2019', { amount: 12 }));
+console.log('Mining block 1....');
+derkCoin.addBlock(new Block(2, '21/06/2019', { amount: 0 }));
